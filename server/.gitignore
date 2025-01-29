@@ -1,0 +1,10 @@
+node_modules/
+.env
+.DS_Store
+dist/
+.vscode/
+sturdy-ranger-448813-f4-1c14f840b401.json
+.vercel
+
+# Local Netlify folder
+.netlify
