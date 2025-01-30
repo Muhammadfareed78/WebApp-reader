@@ -22,7 +22,7 @@ const upload = multer({ storage: storage });
 
 // Google Cloud Vision API Client
 const client = new vision.ImageAnnotatorClient({
-    keyFilename: path.join(__dirname, 'sturdy-ranger-448813-f4-1c14f840b401.json'),
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS, // Use environment variable
 });
 
 // --- Information Extraction Function ---
