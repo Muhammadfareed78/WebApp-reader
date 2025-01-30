@@ -10,8 +10,13 @@ const app = express();
 const port = 3000;
 
 // --- CORS Configuration ---
-const frontendUrl = process.env.FRONTEND_URL || '*';  // Default to '*' if not defined
-app.use(cors({ origin: frontendUrl }));
+const corsOptions = {
+    origin: '*',  
+    methods: ['GET', 'POST', 'OPTIONS'],  // Allow only necessary methods
+    allowedHeaders: ['Content-Type', 'Authorization'],  // Allow necessary headers
+    credentials: true  // Allow cookies/authentication (if needed)
+};
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

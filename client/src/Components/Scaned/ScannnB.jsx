@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ScannB.css';
+import dotenv from 'dotenv';
 
 function ScannB() {
     const [image, setImage] = useState(null);
@@ -32,10 +33,9 @@ function ScannB() {
         formData.append('image', image);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}api/ocr`, {
-                method: 'POST',
-                body: formData,
-            });
+            const API_BASE_URL = import.meta.env.REACT_APP_BACKEND_BASE_URL || "http://localhost:3000/";
+const response = await fetch(`${API_BASE_URL}api/ocr`, { method: 'POST', body: formData });
+
 
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -53,11 +53,11 @@ function ScannB() {
         <div className="App">
             <h1>Business Card OCR</h1>
             <div className="upload-section">
-                <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="environment" 
-                    onChange={handleImageChange} 
+                <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageChange}
                 />
                 <button onClick={handleExtractText} disabled={!image || loading}>
                     {loading ? 'Extracting...' : 'Extract Text'}
