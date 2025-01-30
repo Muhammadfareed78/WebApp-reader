@@ -27,6 +27,8 @@ const client = new vision.ImageAnnotatorClient({
 
 // --- Information Extraction Function ---
 function extractInformation(text) {
+    console.log("Starting information extraction...");
+
     let name = null;
     let email = null;
     let phone = null;
@@ -36,12 +38,14 @@ function extractInformation(text) {
     let designation = null; // For Profession/Designation
 
     const lines = text.split('\n').map(line => line.trim()).filter(line => line); // Trim and remove empty lines
+    console.log("Text split into lines:", lines);
 
     let possibleNameLines = []; // Store lines that look like name candidates
     let addressLines = [];
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].toLowerCase();
+        console.log(`Processing line: ${line}`);
 
         // --- Email Extraction --- (Improved Regex)
         if (!email && (line.includes('@') || /email[:\s]|e-mail[:\s]|mail[:\s]|ईमेल[:\s]/.test(line))) {
@@ -49,6 +53,7 @@ function extractInformation(text) {
             const emailMatch = line.match(emailRegex);
             if (emailMatch) {
                 email = emailMatch[0];
+                console.log("Email found:", email);
             }
             continue;
         }
@@ -59,6 +64,7 @@ function extractInformation(text) {
             const phoneMatch = line.match(phoneRegex);
             if (phoneMatch) {
                 phone = phoneMatch[0];
+                console.log("Phone number found:", phone);
             }
             continue;
         }
@@ -69,6 +75,7 @@ function extractInformation(text) {
             const websiteMatch = line.match(websiteRegex);
             if (websiteMatch) {
                 website = websiteMatch[0];
+                console.log("Website found:", website);
             }
             continue;
         }
@@ -87,10 +94,7 @@ function extractInformation(text) {
                 }
             }
             address = addressLines.join('\n');
-            continue;
-        } else if (!address && addressLines.length > 0 && !/name[:\s]|n a m e[:\s]|नाम[:\s]|email[:\s]|e-mail[:\s]|mail[:\s]|ईमेल[:\s]|phone[:\s]|mobile[:\s]|contact[:\s]|tel[:\s]|ph[:\s]|mob[:\s]|number[:\s]|call[:\s]|फ़ोन[:\s]|मोबाइल[:\s]|संपर्क[:\s]|website[:\s]|web[:\s]|site[:\s]|वेबसाइट[:\s]|वेब[:\s]*/.test(line) && !line.includes('@') && !line.match(/[\d-+\s()]{7,}/) && !/(www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})|(https?:\/\/(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g.test(line) ) {
-            addressLines.push(lines[i]);
-            address = addressLines.join('\n');
+            console.log("Address found:", address);
             continue;
         }
 
@@ -114,6 +118,7 @@ function extractInformation(text) {
             );
             if (possibleDesignation) {
                 designation = possibleDesignation.trim();
+                console.log("Designation found:", designation);
             }
         }
 
@@ -121,6 +126,7 @@ function extractInformation(text) {
         const companyNameSuffixes = ["pvt ltd", "ltd", "inc", "corp", "llc", "limited", "corporation", "incorporated", "company"];
         if (!company && (companyNameSuffixes.some(suffix => line.includes(suffix)) || i === 0 || i === 1) && !nameKeywords.some(keyword => line.includes(keyword)) && !addressKeywords.some(keyword => line.includes(keyword)) && !/email[:\s]|e-mail[:\s]|mail[:\s]|ईमेल[:\s]/.test(line) && !/phone[:\s]|mobile[:\s]|contact[:\s]|tel[:\s]|ph[:\s]|mob[:\s]|number[:\s]|call[:\s]|फ़ोन[:\s]|मोबाइल[:\s]|संपर्क[:\s]*/.test(line) && !/(www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})|(https?:\/\/(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g.test(line) ) {
             company = lines[i];
+            console.log("Company found:", company);
         }
     }
 
@@ -130,6 +136,16 @@ function extractInformation(text) {
             designation = possibleNameLines[1];
         }
     }
+
+    console.log("Extracted structured data:", {
+        name: name?.replace(/name[:\s]|n a m e[:\s]|नाम[:\s]*/i, '').trim() || null,
+        email, 
+        phone, 
+        address: address?.trim() || null, 
+        website, 
+        company: company?.trim() || null, 
+        designation: designation?.trim() || null 
+    });
 
     return { 
         name: name?.replace(/name[:\s]|n a m e[:\s]|नाम[:\s]*/i, '').trim() || null,
@@ -144,22 +160,31 @@ function extractInformation(text) {
 
 // --- OCR Endpoint ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
+    console.log("Received image for OCR:", req.file);
+
     try {
         if (!req.file) {
+            console.error('No image file uploaded.');
             return res.status(400).json({ error: 'No image file uploaded.' });
         }
 
         const imageBuffer = req.file.buffer;
+        console.log("Image buffer received:", imageBuffer);
+
         const request = { image: { content: imageBuffer } };
 
         const [result] = await client.textDetection(request);
-        const detections = result.textAnnotations;
+        console.log("Google Cloud Vision API result:", result);
 
+        const detections = result.textAnnotations;
         let extractedText = detections && detections.length > 0 ? detections[0].description : "";
 
         if (!extractedText.trim()) {
+            console.error("No text detected in the image.");
             return res.status(400).json({ error: 'No text detected in the image.' });
         }
+
+        console.log("Extracted text from image:", extractedText);
 
         const structuredData = extractInformation(extractedText);
 
