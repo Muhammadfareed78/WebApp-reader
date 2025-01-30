@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const vision = require('@google-cloud/vision');
 const multer = require('multer');
+const serverless = require("serverless-http")
 const path = require('path');
 require('dotenv').config();  // Import dotenv to access environment variables
+const router = express.Router()
 
 const app = express();
 const port = 3000;
@@ -16,13 +18,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Multer configuration for handling image uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS); // Parsing the JSON string
+
+
 // Google Cloud Vision API Client
 const client = new vision.ImageAnnotatorClient({
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS, // Use environment variable
+    credentials: credentials // Using decoded credentials directly
 });
 
 // --- Information Extraction Function ---
@@ -159,7 +163,7 @@ function extractInformation(text) {
 }
 
 // --- OCR Endpoint ---
-app.post('/api/ocr', upload.single('image'), async (req, res) => {
+router.post('/api/ocr', upload.single('image'), async (req, res) => {
     console.log("Received image for OCR:", req.file);
     try {
         if (!req.file) {
@@ -199,8 +203,13 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
 app.get('/', (req, res)=>{
     res.send("Welcome Page")
 })
+app.use("/",router)
 
 // --- Start Server ---
-app.listen(port, () => {
-    console.log(`Backend server listening at http://localhost:${port}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Backend server listening at http://localhost:${process.env.PORT}`);
 });
+
+const handler = serverless(app)
+
+module.exports = {handler}

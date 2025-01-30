@@ -48,7 +48,7 @@ function ScannB() {
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}api/ocr`, { method: 'POST', body: formData });
+            const response = await fetch(`https://visiting-card-reader.netlify.app/api/ocr`, { method: 'POST', body: formData });
             console.log("API response status:", response.status);
 
             if (!response.ok) {
