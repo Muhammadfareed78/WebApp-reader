@@ -66,7 +66,7 @@ const response = await fetch(`${API_BASE_URL}api/ocr`, { method: 'POST', body: f
 
             {imagePreview && (
                 <div className="image-preview">
-                    <h3>Uploaded Image:</h3>
+                    {/* <h3>Uploaded Image:</h3> */}
                     <img width={500} src={imagePreview} alt="Preview" />
                 </div>
             )}
