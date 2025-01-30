@@ -9,14 +9,9 @@ require('dotenv').config();  // Import dotenv to access environment variables
 const app = express();
 const port = 3000;
 
-// --- CORS Configuration ---
-const corsOptions = {
-    origin: '*',  
-    methods: ['GET', 'POST', 'OPTIONS'],  // Allow only necessary methods
-    allowedHeaders: ['Content-Type', 'Authorization'],  // Allow necessary headers
-    credentials: true  // Allow cookies/authentication (if needed)
-};
-app.use(cors(corsOptions));
+app.use(cors({
+    origin:"*"
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
