@@ -33,7 +33,8 @@ function ScannB() {
         formData.append('image', image);
 
         try {
-            const API_BASE_URL = import.meta.env.REACT_APP_BACKEND_BASE_URL || "http://localhost:3000/";
+            const API_BASE_URL = import.meta.env.REACT_APP_BACKEND_BASE_UR;
+            
 const response = await fetch(`${API_BASE_URL}api/ocr`, { method: 'POST', body: formData });
 
 
